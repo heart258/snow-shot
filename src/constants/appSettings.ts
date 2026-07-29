@@ -153,7 +153,7 @@ export const defaultAppSettingsData: AppSettingsData = {
 	},
 	[AppSettingsGroup.FunctionOcr]: {
 		htmlVisionModel: "",
-		ocrModel: OcrModel.RapidOcrV4,
+		ocrModel: OcrModel.RapidOcrV5,
 		htmlVisionModelSystemPrompt: `You are a professional image-to-HTML conversion engine. Your sole objective is to accurately convert images into clean, semantic HTML code.
 
 ## Conversion Rules (must follow)

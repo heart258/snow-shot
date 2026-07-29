@@ -201,6 +201,11 @@ export const en = {
 	"tools.translation.domain.medicine": "Medicine",
 	"tools.translation.domain.finance": "Finance",
 	"tools.translation.domain.game": "Gaming",
+	"settings.systemSettings.screenshotSettings.ocrModel": "OCR Model",
+	"settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV4":
+		"Rapid OCR V4 (Legacy)",
+	"settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV5":
+		"Rapid OCR V5 (Recommended)",
 	"settings.functionSettings.fixedContentSettings.autoOcr":
 		"Auto Text Recognition",
 	"settings.functionSettings.fixedContentSettings.autoTranslate":

@@ -137,7 +137,7 @@ impl OcrService {
                 orc_plugin_path.join("ch_PP-OCRv4_rec_infer.onnx"),
             ),
             OcrModel::RapidOcrV5 => (
-                orc_plugin_path.join("ch_PP-OCRv4_det_infer.onnx"),
+                orc_plugin_path.join("ch_PP-OCRv5_mobile_det.onnx"),
                 orc_plugin_path.join("ch_ppocr_mobile_v2.0_cls_infer.onnx"),
                 orc_plugin_path.join("ch_PP-OCRv5_rec_mobile_infer.onnx"),
             ),

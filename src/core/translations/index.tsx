@@ -19,6 +19,8 @@ import {
 	getTranslationTypesWithCache,
 	translate,
 	translateTextDeepL,
+	translateTextLibreTranslate,
+	translateTextOpenAiCompatible,
 } from "@/services/tools/translation";
 import {
 	type AppSettingsData,
@@ -29,6 +31,7 @@ import {
 } from "@/types/appSettings";
 import {
 	type DeepLTranslateResult,
+	type LibreTranslateResult,
 	type TranslateData,
 	TranslationDomain,
 	TranslationType,
@@ -202,6 +205,14 @@ export const useTranslationRequest = (options?: {
 			switch (apiConfigType) {
 				case TranslationApiType.DeepL:
 					return intl.formatMessage({ id: "tools.translation.type.deepl" });
+				case TranslationApiType.LibreTranslate:
+					return intl.formatMessage({
+						id: "tools.translation.type.libretranslate",
+					});
+				case TranslationApiType.OpenAiCompatible:
+					return intl.formatMessage({
+						id: "tools.translation.type.openaiCompatible",
+					});
 				default:
 					return apiConfigType;
 			}
@@ -344,6 +355,96 @@ export const useTranslationRequest = (options?: {
 						result: result.translations.map((item) => ({
 							content: item.text,
 						})),
+					};
+				} else if (config.type === TranslationApiType.LibreTranslate) {
+					setStartTranslateLoading(true);
+
+					let result: LibreTranslateResult | undefined;
+					try {
+						result = await translateTextLibreTranslate(
+							config.translationApiConfig.api_uri,
+							config.translationApiConfig.api_key,
+							params.sourceContent,
+							// LibreTranslate 使用 "auto" 自动检测，中文统一为 "zh"
+							params.sourceLanguage === "auto"
+								? "auto"
+								: params.sourceLanguage.split("-")[0],
+							params.targetLanguage.split("-")[0],
+						);
+					} catch (error) {
+						appError(
+							"[customTranslation] translateTextLibreTranslate error",
+							error,
+						);
+					}
+
+					setStartTranslateLoading(false);
+
+					if (!result) {
+						return {
+							success: false,
+						};
+					}
+
+					const translatedTexts = Array.isArray(result.translatedText)
+						? result.translatedText.map((item) => ({
+								content: item,
+							}))
+						: [{ content: result.translatedText }];
+
+					options?.onComplete?.(translatedTexts, params.requestId);
+
+					return {
+						success: true,
+						result: translatedTexts,
+					};
+				} else if (config.type === TranslationApiType.OpenAiCompatible) {
+					setStartTranslateLoading(true);
+
+					let responseContent: string | undefined;
+					try {
+						responseContent = await translateTextOpenAiCompatible(
+							config.translationApiConfig.api_uri,
+							config.translationApiConfig.api_key,
+							config.translationApiConfig.api_model ?? "",
+							params.sourceContent,
+							getTranslationPrompt(
+								translationConfig?.translationSystemPrompt ??
+									defaultTranslationPrompt,
+								sourceLanguage,
+								targetLanguage,
+								translationDomain,
+							),
+							chatConfig?.maxTokens ?? 4096,
+							chatConfig?.temperature ?? 1,
+						);
+					} catch (error) {
+						appError(
+							"[customTranslation] translateTextOpenAiCompatible error",
+							error,
+						);
+					}
+
+					setStartTranslateLoading(false);
+
+					if (!responseContent) {
+						return {
+							success: false,
+						};
+					}
+
+					const result =
+						params.sourceContent.length > 1
+							? responseContent.split("%%").map((item) => ({
+									content: trim(item),
+								}))
+							: [{ content: responseContent }];
+
+					options?.onComplete?.(result, params.requestId);
+
+					return {
+						success: true,
+						result,
 					};
 				}
 			}

@@ -187,11 +187,38 @@ export const en = {
 	"tools.translation.domain": "Translation Domain",
 	"tools.translation.type.youdao": "Youdao Translate",
 	"tools.translation.type.deepseek": "DeepSeek",
+	"tools.translation.type.deepl": "DeepL Translate",
+	"tools.translation.type.libretranslate": "LibreTranslate",
+	"tools.translation.type.openaiCompatible": "OpenAI-Compatible API",
+	"tools.translation.type.googleWeb": "Google Web Translate",
+	"tools.translation.type.custom": "Custom",
+	"tools.translation.type.official": "Snow Shot",
+	"tools.translation.googleWeb.tooManyRequests":
+		"Google Translate requests are too frequent, please try again later",
+	"tools.translation.googleWeb.failed": "Google Translate failed",
 	"tools.translation.domain.general": "General",
 	"tools.translation.domain.computers": "Computers",
 	"tools.translation.domain.medicine": "Medicine",
 	"tools.translation.domain.finance": "Finance",
 	"tools.translation.domain.game": "Gaming",
+	"settings.functionSettings.fixedContentSettings.autoOcr":
+		"Auto Text Recognition",
+	"settings.functionSettings.fixedContentSettings.autoTranslate":
+		"Auto Translate After Recognition",
+	"settings.functionSettings.fixedContentSettings.autoTranslate.tip":
+		"Automatically invoke the translation engine after recognizing text from a pinned image. A translation service must be configured first.",
+	"settings.functionSettings.translationSettings.apiConfig.apiType.deepL":
+		"DeepL",
+	"settings.functionSettings.translationSettings.apiConfig.apiType.libreTranslate":
+		"LibreTranslate",
+	"settings.functionSettings.translationSettings.apiConfig.apiType.openAiCompatible":
+		"OpenAI-Compatible API",
+	"settings.functionSettings.translationSettings.apiConfig.apiModel":
+		"Model Name",
+	"settings.functionSettings.translationSettings.apiConfig.apiModel.tip":
+		"Model name used by the OpenAI-compatible endpoint, e.g. gpt-4o-mini, qwen2-7b-instruct",
+	"settings.functionSettings.translationSettings.apiConfig.apiModel.required":
+		"Please enter the model name",
 	"settings.systemSettings.networkSettings": "Network Settings",
 	"settings.systemSettings.networkSettings.proxy": "System Proxy",
 	"settings.chatSettings.thinkingBudgetTokens": "Thinking Budget Tokens",

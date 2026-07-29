@@ -268,6 +268,7 @@ Priority order (highest to lowest):
 		zoomWithMouse: true,
 		autoResizeWindow: true,
 		autoOcr: true,
+		autoTranslate: false,
 		autoCopyToClipboard: false,
 		initialPosition: AppSettingsFixedContentInitialPosition.MousePosition,
 	},

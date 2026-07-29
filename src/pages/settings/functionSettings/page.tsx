@@ -556,6 +556,18 @@ export const FunctionSettingsPage = () => {
 				}),
 				value: TranslationApiType.DeepL,
 			},
+			{
+				label: intl.formatMessage({
+					id: "settings.functionSettings.translationSettings.apiConfig.apiType.libreTranslate",
+				}),
+				value: TranslationApiType.LibreTranslate,
+			},
+			{
+				label: intl.formatMessage({
+					id: "settings.functionSettings.translationSettings.apiConfig.apiType.openAiCompatible",
+				}),
+				value: TranslationApiType.OpenAiCompatible,
+			},
 		];
 	}, [intl]);
 
@@ -1235,6 +1247,25 @@ export const FunctionSettingsPage = () => {
 							</Col>
 						)}
 
+						{isReadyStatus?.(PLUGIN_ID_TRANSLATE) && (
+							<Col span={12}>
+								<ProFormSwitch
+									label={
+										<IconLabel
+											label={
+												<FormattedMessage id="settings.functionSettings.fixedContentSettings.autoTranslate" />
+											}
+											tooltipTitle={
+												<FormattedMessage id="settings.functionSettings.fixedContentSettings.autoTranslate.tip" />
+											}
+										/>
+									}
+									name="autoTranslate"
+									layout="horizontal"
+								/>
+							</Col>
+						)}
+
 						<Col span={12}>
 							<ProFormSwitch
 								name="autoResizeWindow"
@@ -1546,6 +1577,36 @@ export const FunctionSettingsPage = () => {
 																			}
 																		/>
 																	}
+																/>
+															</Col>
+														);
+													}
+
+													if (
+														api_type === TranslationApiType.OpenAiCompatible
+													) {
+														return (
+															<Col span={12}>
+																<ProFormText
+																	name="api_model"
+																	label={
+																		<IconLabel
+																			label={
+																				<FormattedMessage id="settings.functionSettings.translationSettings.apiConfig.apiModel" />
+																			}
+																			tooltipTitle={
+																				<FormattedMessage id="settings.functionSettings.translationSettings.apiConfig.apiModel.tip" />
+																			}
+																		/>
+																	}
+																	rules={[
+																		{
+																			required: true,
+																			message: intl.formatMessage({
+																				id: "settings.functionSettings.translationSettings.apiConfig.apiModel.required",
+																			}),
+																		},
+																	]}
 																/>
 															</Col>
 														);

@@ -70,6 +70,8 @@ export type ChatApiConfig = {
 
 export enum TranslationApiType {
 	DeepL = "translation_api_deepl",
+	LibreTranslate = "translation_api_libretranslate",
+	OpenAiCompatible = "translation_api_openai_compatible",
 }
 
 export type TranslationApiConfig = {
@@ -77,6 +79,8 @@ export type TranslationApiConfig = {
 	api_uri: string;
 	api_key: string;
 	deepl_prefer_quality_optimized?: boolean;
+	/** OpenAI 兼容接口使用的模型名称 */
+	api_model?: string;
 };
 
 export enum AppSettingsGroup {
@@ -475,6 +479,8 @@ export type AppSettingsData = {
 		autoResizeWindow: boolean;
 		/** 固定屏幕后自动 OCR */
 		autoOcr: boolean;
+		/** OCR 完成后自动翻译 */
+		autoTranslate: boolean;
 		/** 固定截图后自动复制到剪贴板 */
 		autoCopyToClipboard: boolean;
 		/** 窗口初始位置 */

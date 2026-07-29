@@ -434,6 +434,10 @@ export const settings = {
 	"settings.functionSettings.fixedContentSettings.initialPosition.tip":
 		"截图的固定到屏幕不受影响",
 	"settings.functionSettings.fixedContentSettings.autoOcr": "自动文本识别",
+	"settings.functionSettings.fixedContentSettings.autoTranslate":
+		"识别后自动翻译",
+	"settings.functionSettings.fixedContentSettings.autoTranslate.tip":
+		"置顶图片识别文字后自动调用翻译引擎，需先配置翻译服务",
 	"settings.functionSettings.fixedContentSettings.autoCopyToClipboard":
 		"固定截图后自动复制到剪贴板",
 	"settings.functionSettings.fixedContentSettings.initialPosition.monitorCenter":
@@ -450,6 +454,10 @@ export const settings = {
 	"settings.functionSettings.translationSettings.apiConfig.apiType": "翻译服务",
 	"settings.functionSettings.translationSettings.apiConfig.apiType.deepL":
 		"DeepL",
+	"settings.functionSettings.translationSettings.apiConfig.apiType.libreTranslate":
+		"LibreTranslate",
+	"settings.functionSettings.translationSettings.apiConfig.apiType.openAiCompatible":
+		"OpenAI 兼容接口",
 	"settings.functionSettings.translationSettings.apiConfig.apiUri": "API 地址",
 	"settings.functionSettings.translationSettings.apiConfig.apiUri.tip":
 		"请直接指向翻译接口，如：https://api-free.deepl.com/v2/translate",
@@ -466,6 +474,12 @@ export const settings = {
 		"高质量模型",
 	"settings.functionSettings.translationSettings.apiConfig.deeplPreferQualityOptimized.tip":
 		"如果开启，DeepL 会优先使用延迟更高、质量更高的翻译模型",
+	"settings.functionSettings.translationSettings.apiConfig.apiModel":
+		"模型名称",
+	"settings.functionSettings.translationSettings.apiConfig.apiModel.tip":
+		"OpenAI 兼容接口使用的模型名称，如 gpt-4o-mini、qwen-plus 等；本地部署的 Ollama 可填入 llama3.1、qwen2.5 等",
+	"settings.functionSettings.translationSettings.apiConfig.apiModel.required":
+		"请输入模型名称",
 	"settings.functionSettings.trayIconSettings": "托盘",
 	"settings.functionSettings.trayIconSettings.iconClickAction": "左键点击后",
 	"settings.functionSettings.trayIconSettings.iconClickAction.screenshot":

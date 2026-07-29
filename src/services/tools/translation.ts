@@ -1,5 +1,6 @@
 import type {
 	DeepLTranslateResult,
+	LibreTranslateResult,
 	TranslateData,
 	TranslateParams,
 	TranslationTypeOption,
@@ -66,4 +67,77 @@ export const translateTextDeepL = async (
 	}
 
 	return (await response.json()) as DeepLTranslateResult;
+};
+
+export const translateTextLibreTranslate = async (
+	apiUri: string,
+	apiKey: string,
+	sourceContent: string[],
+	sourceLanguage: string | null,
+	targetLanguage: string,
+): Promise<LibreTranslateResult | undefined> => {
+	const response = await serviceBaseFetch(apiUri, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+		},
+		data: {
+			q: sourceContent,
+			source: sourceLanguage ?? "auto",
+			target: targetLanguage,
+			format: "text",
+		},
+	});
+
+	if (response instanceof ServiceResponse) {
+		response.success();
+		return undefined;
+	}
+
+	return (await response.json()) as LibreTranslateResult;
+};
+
+export const translateTextOpenAiCompatible = async (
+	apiUri: string,
+	apiKey: string,
+	apiModel: string,
+	sourceContent: string[],
+	systemPrompt: string,
+	maxTokens: number,
+	temperature: number,
+): Promise<string | undefined> => {
+	const body: Record<string, unknown> = {
+		model: apiModel,
+		messages: [
+			{ role: "system", content: systemPrompt },
+			{ role: "user", content: sourceContent.join("%%") },
+		],
+		max_completion_tokens: maxTokens,
+		temperature,
+		stream: false,
+	};
+
+	const response = await serviceBaseFetch(
+		`${apiUri.endsWith("/") ? apiUri : `${apiUri}/`}chat/completions`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+			},
+			data: body,
+		},
+	);
+
+	if (response instanceof ServiceResponse) {
+		response.success();
+		return undefined;
+	}
+
+	const data = (await response.json()) as {
+		choices?: { message?: { content?: string } }[];
+	};
+
+	return data.choices?.[0]?.message?.content;
 };

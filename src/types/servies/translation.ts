@@ -65,3 +65,7 @@ export type DeepLTranslateResult = {
 		text: string;
 	}[];
 };
+
+export type LibreTranslateResult = {
+	translatedText: string | string[];
+};

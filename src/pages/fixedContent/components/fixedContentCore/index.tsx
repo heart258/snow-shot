@@ -290,6 +290,8 @@ const FixedContentCoreInner: React.FC<{
 		AppOcrResult | undefined
 	>(undefined);
 	const [translateLoading, setTranslateLoading] = useState(false);
+	// 标记自动翻译是否已触发过，避免重复翻译（每次新置顶/新 OCR 重置）
+	const autoTranslateTriggeredRef = useRef<boolean>(false);
 	const enableOcrTranslate = useMemo(() => {
 		return (
 			getSelectTextMode(fixedContentType) === "ocr" &&
@@ -312,6 +314,25 @@ const FixedContentCoreInner: React.FC<{
 			isReadyStatus?.(PLUGIN_ID_AI_CHAT)
 		);
 	}, [fixedContentType, enableSelectText, isReadyStatus]);
+
+	const handleOcrResultChange = useCallback(
+		(result: AppOcrResult | undefined) => {
+			setOcrResult(result);
+
+			// OCR 完成后自动翻译（需开启 autoTranslate 且翻译服务就绪，且仅触发一次）
+			if (
+				result &&
+				result.result.text_blocks.length > 0 &&
+				!autoTranslateTriggeredRef.current &&
+				isReady?.(PLUGIN_ID_TRANSLATE) &&
+				getAppSettings()[AppSettingsGroup.FunctionFixedContent].autoTranslate
+			) {
+				autoTranslateTriggeredRef.current = true;
+				ocrResultActionRef.current?.startTranslate();
+			}
+		},
+		[isReady, getAppSettings],
+	);
 
 	const [textContent, setTextContent, textContentRef] = useStateRef<
 		| {
@@ -528,6 +549,49 @@ const FixedContentCoreInner: React.FC<{
 					await imageLayerActionRef.current.setBaseImage(imageDataRef.current);
 				}
 				imageDataRef.current = undefined;
+
+				// 置顶图片后自动 OCR（initImage 路径，与 initDraw 中的 autoOcr 逻辑对齐）
+				if (
+					isReady?.(PLUGIN_ID_RAPID_OCR) &&
+					getAppSettings()[AppSettingsGroup.FunctionFixedContent].autoOcr &&
+					!imageOcrSignRef.current
+				) {
+					const imageBitmap = await imageLayerActionRef.current
+						?.getImageLayerAction()
+						?.getImageBitmap(
+							{
+								min_x: 0,
+								min_y: 0,
+								max_x: needSwapWidthAndHeight(
+									processImageConfigRef.current.angle,
+								)
+									? canvasPropsRef.current.height
+									: canvasPropsRef.current.width,
+								max_y: needSwapWidthAndHeight(
+									processImageConfigRef.current.angle,
+								)
+									? canvasPropsRef.current.width
+									: canvasPropsRef.current.height,
+							},
+							INIT_CONTAINER_KEY,
+						);
+					if (imageBitmap) {
+						const ocrCanvas = document.createElement("canvas");
+						ocrCanvas.width = imageBitmap.width;
+						ocrCanvas.height = imageBitmap.height;
+						const ctx = ocrCanvas.getContext("2d");
+						if (ctx) {
+							ctx.drawImage(imageBitmap, 0, 0);
+							ocrResultActionRef.current?.init({
+								canvas: ocrCanvas,
+								monitorScaleFactor: window.devicePixelRatio,
+							});
+							imageOcrSignRef.current = true;
+							setEnableSelectText(true);
+							ocrResultActionRef.current?.setEnable(true);
+						}
+					}
+				}
 			} else if (
 				fixedContentTypeRef.current === FixedContentType.Html ||
 				fixedContentTypeRef.current === FixedContentType.Text
@@ -575,6 +639,9 @@ const FixedContentCoreInner: React.FC<{
 			copyRawToClipboard,
 			getAppSettings,
 			setScale,
+			isReady,
+			setEnableSelectText,
+			processImageConfigRef,
 		],
 	);
 
@@ -729,6 +796,7 @@ const FixedContentCoreInner: React.FC<{
 			}
 
 			imageOcrSignRef.current = false;
+			autoTranslateTriggeredRef.current = false;
 
 			tryInitImageLayer();
 		},
@@ -805,6 +873,7 @@ const FixedContentCoreInner: React.FC<{
 			} else {
 				imageOcrSignRef.current = true;
 			}
+			autoTranslateTriggeredRef.current = false;
 
 			const scaleFactor = await getCurrentWindow().scaleFactor();
 			setWindowSize({
@@ -2619,7 +2688,7 @@ const FixedContentCoreInner: React.FC<{
 							processImageConfig,
 						),
 					}}
-					onOcrResultChange={setOcrResult}
+					onOcrResultChange={handleOcrResultChange}
 					onTranslatedResultChange={setTranslatorOcrResult}
 					onVisionModelHtmlResultChange={setVisionModelHtmlResult}
 					onVisionModelMarkdownResultChange={setVisionModelMarkdownResult}

@@ -38,6 +38,14 @@ export const PluginServiceContextProvider: React.FC<{
 					"ch_PP-OCRv4_rec_infer.onnx",
 					"ch_PP-OCRv5_mobile_det.onnx",
 					"ch_PP-OCRv5_rec_mobile_infer.onnx",
+					"PP-OCRv6_det_tiny.onnx",
+					"PP-OCRv6_rec_tiny.onnx",
+					"ppocrv6_tiny_dict.txt",
+					"PP-OCRv6_det_small.onnx",
+					"PP-OCRv6_rec_small.onnx",
+					"PP-OCRv6_det_medium.onnx",
+					"PP-OCRv6_rec_medium.onnx",
+					"ppocrv6_dict.txt",
 				],
 			},
 			{
@@ -74,7 +82,7 @@ export const PluginServiceContextProvider: React.FC<{
 
 		const pluginConfig = new PluginConfig(
 			pluginList,
-			"20260729",
+			"20260729v6",
 			await path.join(configDirPath, "plugins"),
 			await path.join(configDirPath, "pluginsDownloads"),
 			"https://snowshot.top/plugins/",

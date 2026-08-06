@@ -73,3 +73,19 @@ Snow Shot 追求简单高效的使用体验，希望每个用户都能依照直�
 
 - [官方网站](https://snowshot.top/index.html)
 - [开发文档](/docs/development.md)
+
+---
+
+## Fork 说明
+
+本项目为 **Snow Shot** 的二次开发分支，基于上游仓库二次定制而来，遵循上游开源许可证的相关要求。
+
+- **上游来源**：本分支基于 [snow-shot](https://github.com/mg-chao/snow-shot) 的 [main](https://github.com/mg-chao/snow-shot/tree/main) 分支派生。
+- **定位**：面向个人使用场景的定制分支，重点关注 **OCR 引擎升级** 与 **本地化功能扩展**，不承诺与上游保持同步。
+- **主要改动**：
+  - OCR 引擎由 OcrLite 迁移至 [rapid-ocr-rs](https://github.com/mg-chao/paddle-ocr-rs)（基于 ONNX Runtime），支持 **PP-OCRv4 / v5 / v6** 多档模型；
+  - 新增 **PP-OCRv6** 三档模型（Tiny / Small / Medium）的前端配置与中文/英文多语言文案；
+  - 新增模型自动化发布工作流（`.github/workflows/models.yml`）；
+  - 其余功能与上游保持一致。
+- **同步策略**：本分支采用「按需取用」方式，仅在需要时合并上游更新，不设定固定的同步周期。
+- **版权声明**：所有上游代码版权归原作者所有，本分支仅在其基础上做增量修改，修改部分同样遵循上游开源许可证。

@@ -1,0 +1,152 @@
+# PP-OCRv6 模型发布工作流
+# 自动下载 PP-OCRv4/v5/v6 检测识别模型、校验 SHA256、打包为 rapid_ocr 插件 zip 并发布
+name: OCR Models Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "模型包版本号（如 6.1.0），用于生成 Release tag"
+                required: true
+                type: string
+    push:
+        tags:
+            - "models-v*" # 推送 models-v* 标签时触发
+
+env:
+    REGISTRY: https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve
+
+jobs:
+    package-models:
+        name: Download & Package PP-OCR Models
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            # 生成版本号（手动触发使用输入，否则取 tag）
+            - name: Set version
+              id: vars
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+                  else
+                    echo "version=${GITHUB_REF#refs/tags/models-v}" >> $GITHUB_OUTPUT
+                  fi
+              shell: bash
+
+            # 下载全部模型与字典到 models/ 目录
+            - name: Download models and dicts
+              run: |
+                  mkdir -p models
+                  cd models
+                  die() { echo "FAILED: $1" >&2; exit 1; }
+
+                  fetch() {
+                    local url="$1" out="$2"
+                    curl -fL --retry 3 -o "$out" "$url" || die "download $out"
+                  }
+
+                  # PP-OCRv4
+                  fetch "$REGISTRY/v3.6.0/onnx/PP-OCRv4/det/ch_PP-OCRv4_det_infer.onnx" ch_PP-OCRv4_det_infer.onnx
+                  fetch "$REGISTRY/v3.6.0/onnx/PP-OCRv4/rec/ch_PP-OCRv4_rec_infer.onnx" ch_PP-OCRv4_rec_infer.onnx
+                  fetch "$REGISTRY/v3.6.0/paddle/PP-OCRv4/rec/ch_PP-OCRv4_rec_infer/ppocr_keys_v1.txt" ppocr_keys_v1.txt
+
+                  # 方向分类模型（各版本通用）
+                  fetch "$REGISTRY/v3.6.0/onnx/PP-OCRv4/cls/ch_ppocr_mobile_v2.0_cls_infer.onnx" ch_ppocr_mobile_v2.0_cls_infer.onnx
+
+                  # PP-OCRv5
+                  fetch "$REGISTRY/v3.6.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_mobile_det.onnx" ch_PP-OCRv5_mobile_det.onnx
+                  fetch "$REGISTRY/v3.6.0/onnx/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile_infer.onnx" ch_PP-OCRv5_rec_mobile_infer.onnx
+                  fetch "$REGISTRY/v3.6.0/paddle/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile_infer/ppocrv5_dict.txt" ppocrv5_dict.txt
+
+                  # PP-OCRv6 检测
+                  fetch "$REGISTRY/v3.9.1/onnx/PP-OCRv6/det/PP-OCRv6_det_tiny.onnx" PP-OCRv6_det_tiny.onnx
+                  fetch "$REGISTRY/v3.9.1/onnx/PP-OCRv6/det/PP-OCRv6_det_small.onnx" PP-OCRv6_det_small.onnx
+                  fetch "$REGISTRY/v3.9.1/onnx/PP-OCRv6/det/PP-OCRv6_det_medium.onnx" PP-OCRv6_det_medium.onnx
+
+                  # PP-OCRv6 识别
+                  fetch "$REGISTRY/v3.9.1/onnx/PP-OCRv6/rec/PP-OCRv6_rec_tiny.onnx" PP-OCRv6_rec_tiny.onnx
+                  fetch "$REGISTRY/v3.9.1/onnx/PP-OCRv6/rec/PP-OCRv6_rec_small.onnx" PP-OCRv6_rec_small.onnx
+                  fetch "$REGISTRY/v3.9.1/onnx/PP-OCRv6/rec/PP-OCRv6_rec_medium.onnx" PP-OCRv6_rec_medium.onnx
+                  fetch "$REGISTRY/v3.9.1/paddle/PP-OCRv6/rec/PP-OCRv6_rec_tiny/ppocrv6_tiny_dict.txt" ppocrv6_tiny_dict.txt
+                  fetch "$REGISTRY/v3.9.1/paddle/PP-OCRv6/rec/PP-OCRv6_rec_small/ppocrv6_dict.txt" ppocrv6_dict.txt
+
+                  ls -lh
+              shell: bash
+
+            # 校验所有模型文件的 SHA256
+            - name: Verify SHA256 checksums
+              run: |
+                  cd models
+                  cat > checksums.sha256 <<'EOF'
+                  d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9  ch_PP-OCRv4_det_infer.onnx
+                  48fc40f24f6d2a207a2b1091d3437eb3cc3eb6b676dc3ef9c37384005483683b  ch_PP-OCRv4_rec_infer.onnx
+                  e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c  ch_ppocr_mobile_v2.0_cls_infer.onnx
+                  4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae  ch_PP-OCRv5_mobile_det.onnx
+                  5825fc7ebf84ae7a412be049820b4d86d77620f204a041697b0494669b1742c5  ch_PP-OCRv5_rec_mobile_infer.onnx
+                  f42c0fbd294d95eac1a550e131b277dac97462c8025fa4b6c3cec1b7894bd3d5  PP-OCRv6_det_tiny.onnx
+                  090f04abcd9d9a7498bc4ebf677e4cb9bdce1fe4197ddb7e529f1ef44e1ff94f  PP-OCRv6_det_small.onnx
+                  92078b7355007ccfffcd4c8cd441a3afd4538904d06881b29a155e1e679907c2  PP-OCRv6_det_medium.onnx
+                  e16e242de5937ad92609223f19bc2aff3727ee40b095f996907c24749bad251b  PP-OCRv6_rec_tiny.onnx
+                  6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884  PP-OCRv6_rec_small.onnx
+                  eef444829dbbe18d7fea59a3f6eb75647518d2b3a9568d27c92e42940204894b  PP-OCRv6_rec_medium.onnx
+                  EOF
+                  sha256sum -c checksums.sha256
+              shell: bash
+
+            # 将模型展平到插件目标目录（与前端 rapid_ocr file_list 保持一致）
+            - name: Stage plugin files
+              run: |
+                  mkdir -p rapid_ocr
+                  cd models
+                  cp ch_ppocr_mobile_v2.0_cls_infer.onnx  ../rapid_ocr/
+                  cp ch_PP-OCRv4_det_infer.onnx            ../rapid_ocr/
+                  cp ch_PP-OCRv4_rec_infer.onnx            ../rapid_ocr/
+                  cp ppocr_keys_v1.txt                     ../rapid_ocr/
+                  cp ch_PP-OCRv5_mobile_det.onnx           ../rapid_ocr/
+                  cp ch_PP-OCRv5_rec_mobile_infer.onnx     ../rapid_ocr/
+                  cp ppocrv5_dict.txt                      ../rapid_ocr/
+                  cp PP-OCRv6_det_tiny.onnx  PP-OCRv6_rec_tiny.onnx  ppocrv6_tiny_dict.txt  ../rapid_ocr/
+                  cp PP-OCRv6_det_small.onnx PP-OCRv6_rec_small.onnx ../rapid_ocr/
+                  cp PP-OCRv6_det_medium.onnx PP-OCRv6_rec_medium.onnx ppocrv6_dict.txt ../rapid_ocr/
+                  cd ..
+                  ls -lh rapid_ocr
+              shell: bash
+
+            # 打包 windows_x64 与 macos_aarch64 两份 zip（模型与平台无关，内容一致）
+            - name: Package plugin zips
+              run: |
+                  mkdir -p dist/windows_x64 dist/macos_aarch64
+                  (cd rapid_ocr && zip -r ../dist/windows_x64/rapid_ocr.zip .)
+                  (cd rapid_ocr && zip -r ../dist/macos_aarch64/rapid_ocr.zip .)
+                  ls -lh dist/windows_x64 dist/macos_aarch64
+              shell: bash
+
+            # 上传 zip 到 GitHub Release
+            - name: Create/Update Release and upload assets
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: models-v${{ steps.vars.outputs.version }}
+                  name: Snow Shot OCR Models models-v${{ steps.vars.outputs.version }}
+                  body: |
+                      PP-OCRv6 OCR 模型包（Tiny / Small / Medium 三档），并含 PP-OCRv4 / v5 旧模型以兼容旧档位。
+
+                      ### 文件清单
+                      - PP-OCRv6_det_{tiny,small,medium}.onnx
+                      - PP-OCRv6_rec_{tiny,small,medium}.onnx
+                      - ppocrv6_tiny_dict.txt / ppocrv6_dict.txt
+                      - ch_ppocr_mobile_v2.0_cls_infer.onnx
+                      - ch_PP-OCRv5_mobile_det.onnx / ch_PP-OCRv5_rec_mobile_infer.onnx / ppocrv5_dict.txt
+                      - ch_PP-OCRv4_det_infer.onnx / ch_PP-OCRv4_rec_infer.onnx / ppocr_keys_v1.txt
+
+                      ### 部署说明
+                      将 `windows_x64/rapid_ocr.zip` 与 `macos_aarch64/rapid_ocr.zip`
+                      上传到插件分发服务 `https://snowshot.top/plugins/<version>/<os>/rapid_ocr.zip`，
+                      并同步更新前端插件版本号。
+                  files: |
+                      dist/windows_x64/rapid_ocr.zip
+                      dist/macos_aarch64/rapid_ocr.zip
+                  token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,10 +1,9 @@
 use log;
-use paddle_ocr_rs::ocr_result::TextBlock;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
 use serde::Deserialize;
 use serde::Serialize;
-use snow_shot_app_services::ocr_service::{OcrModel, OcrService};
+use snow_shot_app_services::ocr_service::{OcrModel, OcrService, TextBlock};
 use std::io::Cursor;
 use std::path::PathBuf;
 use tokio::sync::Mutex;
@@ -77,8 +76,6 @@ pub async fn ocr_detect_core(
         );
     }
 
-    let max_size = image.height().max(image.width());
-
     let image_buffer = match image {
         image::DynamicImage::ImageRgb8(image) => image,
         image::DynamicImage::ImageRgba8(image) => {
@@ -87,21 +84,18 @@ pub async fn ocr_detect_core(
         }
         _ => return Err("[ocr_detect_core] Invalid image".to_string()),
     };
-    let ocr_result = ocr_service.get_session().await?.detect_angle_rollback(
-        &image_buffer,
-        50,
-        max_size,
-        0.5,
-        0.3,
-        1.6,
-        detect_angle,
-        false,
-        0.9, // 屏幕截取的文字质量通常较高，且非横向排版的情况较少，尽量减少角度的影响
-    );
+    let ocr_result = ocr_service
+        .run_ocr(
+            image_buffer.width() as usize,
+            image_buffer.height() as usize,
+            image_buffer.as_raw(),
+            detect_angle,
+        )
+        .await;
 
     match ocr_result {
-        Ok(ocr_result) => Ok(OcrDetectResult {
-            text_blocks: ocr_result.text_blocks,
+        Ok(text_blocks) => Ok(OcrDetectResult {
+            text_blocks,
             scale_factor,
         }),
         Err(e) => return Err(format!("[ocr_detect_core] Failed to detect text: {}", e)),

@@ -13,7 +13,7 @@ rayon = { workspace = true }
 
 snow-shot-app-services = { workspace = true }
 
-paddle-ocr-rs = "0.6.1"
+rapid-ocr-rs = { git = "https://github.com/mg-chao/paddle-ocr-rs", branch = "main", default-features = false }
 
 [target.'cfg(any(target_os = "windows"))'.dependencies]
 snow-shot-webview = { workspace = true }

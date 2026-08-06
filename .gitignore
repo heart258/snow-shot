@@ -44,3 +44,7 @@ tsconfig.tsbuildinfo
 
 # env files (can opt-in for committing if needed)
 .env*
+
+# OCR 模型临时目录（模型通过插件分发，不提交到仓库）
+.models-staging/
+.models-pkg/

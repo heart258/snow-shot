@@ -644,6 +644,24 @@ export const FunctionSettingsPage = () => {
 				}),
 				value: OcrModel.RapidOcrV5,
 			},
+			{
+				label: intl.formatMessage({
+					id: "settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV6Tiny",
+				}),
+				value: OcrModel.RapidOcrV6Tiny,
+			},
+			{
+				label: intl.formatMessage({
+					id: "settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV6Small",
+				}),
+				value: OcrModel.RapidOcrV6Small,
+			},
+			{
+				label: intl.formatMessage({
+					id: "settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV6Medium",
+				}),
+				value: OcrModel.RapidOcrV6Medium,
+			},
 		];
 	}, [intl]);
 

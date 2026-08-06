@@ -205,7 +205,13 @@ export const en = {
 	"settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV4":
 		"Rapid OCR V4 (Legacy)",
 	"settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV5":
-		"Rapid OCR V5 (Recommended)",
+		"Rapid OCR V5 (Legacy)",
+	"settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV6Tiny":
+		"Rapid OCR V6 Tiny (Light)",
+	"settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV6Small":
+		"Rapid OCR V6 Small (Recommended)",
+	"settings.systemSettings.screenshotSettings.ocrModel.rapidOcrV6Medium":
+		"Rapid OCR V6 Medium (High Accuracy)",
 	"settings.functionSettings.fixedContentSettings.autoOcr":
 		"Auto Text Recognition",
 	"settings.functionSettings.fixedContentSettings.autoTranslate":
